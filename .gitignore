@@ -1,0 +1,12 @@
+*.spec
+.*.swp
+.repodata
+cache
+repodata
+.idea
+.kitchen
+.DS_Store
+.project
+.settings
+.bundle
+.vagrant
