@@ -1,0 +1,24 @@
+{
+  "name": "mslib/msframework",
+  "description": "a simple MVC framework",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Marco Spallanzani"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "zendframework/zend-config": "^3.1",
+    "zendframework/zend-http": "^2.6",
+    "monolog/monolog": "^1.23"
+  },
+  "autoload":
+  {
+    "psr-4":
+    {
+      "Mslib\\" : "src/"
+    }
+  }
+}
