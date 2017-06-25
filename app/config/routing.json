@@ -1,0 +1,28 @@
+{
+  "routes" : {
+    "user-show"  : {
+      "url"         : "/user",
+      "http-method" : "GET",
+      "controller"  : "Mslib\\Controller\\UserController",
+      "method"      : "show"
+    },
+    "user-create"  : {
+      "url"         : "/user",
+      "http-method" : "POST",
+      "controller"  : "Mslib\\Controller\\UserController",
+      "method"      : "create"
+    },
+    "user-edit"  : {
+      "url"         : "/user",
+      "http-method" : "PUT",
+      "controller"  : "Mslib\\Controller\\UserController",
+      "method"      : "edit"
+    },
+    "user-delete"  : {
+      "url"         : "/user",
+      "http-method" : "DELETE",
+      "controller"  : "Mslib\\Controller\\UserController",
+      "method"      : "delete"
+    }
+  }
+}
