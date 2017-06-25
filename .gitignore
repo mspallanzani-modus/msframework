@@ -10,3 +10,5 @@ repodata
 .settings
 .bundle
 .vagrant
+/vendor/
+/var/
