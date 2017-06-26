@@ -9,5 +9,13 @@ namespace Mslib\Exception;
  */
 class ConfigException extends MsException
 {
-
+    /**
+     * Returns a general error message for this exception
+     *
+     * @return string
+     */
+    public function getGeneralMessage()
+    {
+        return "API Configuration Error";
+    }
 }

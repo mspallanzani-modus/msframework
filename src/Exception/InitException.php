@@ -3,11 +3,11 @@
 namespace Mslib\Exception;
 
 /**
- * Class RoutingException: custom exception used for a general routing error
+ * Class InitException: custom exception used for a general initialization error
  *
  * @package Mslib\Exception
  */
-class RoutingException extends MsException
+class InitException extends MsException
 {
     /**
      * Returns a general error message for this exception
@@ -16,6 +16,6 @@ class RoutingException extends MsException
      */
     public function getGeneralMessage()
     {
-        return "Routing Error";
+        return "Initialization Error";
     }
 }

@@ -7,7 +7,12 @@ namespace Mslib\Exception;
  *
  * @package Mslib\Exception
  */
-class MsException extends \Exception
+abstract class MsException extends \Exception
 {
-
+    /**
+     * Returns a general error message for this exception
+     *
+     * @return string
+     */
+    abstract public function getGeneralMessage();
 }
