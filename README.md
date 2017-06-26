@@ -10,6 +10,8 @@ My application **is missing of an encryption system for sensitive data (i.e. pas
 
 ## Installation
 
+### Configuring the VM through vagrant
+
 Use vagrant to configure and run this web application on a virtual box. Before proceeding, make sure your SSH is configured to work with Github (https://help.github.com/articles/generating-an-ssh-key/Locally). 
 
 - download this repository;
@@ -24,15 +26,49 @@ echo 192.168.59.76   testbox.dev www.testbox.dev | sudo tee -a /etc/hosts
 vagrant up
 ```
 
+### Configuring all vendors through composer
+
 - Run composer install to download all project dependencies (for more information on how to use and install composer on your local machine, please refer to the official online documentation):
 ```
 composer install
 ```
 
-- Install the database;
+### Creating the database
+
+By default, the used Vagrant image creates a database 'my_app'. To create the required tables, do the following actions:
+
+- Connect to your vagrant machine with the command 
+```
+vagrant ssh 
+```
+- Run the following mysql command:
+```
+mysql my_app < /vagrant/db/db.sql
+```
+
+The database scheme can be found in the project in the following file:
+```
+db/db.sql
+```
+
+Here is the sql creation code for the 'user' table:
+```sql
+CREATE TABLE `user` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) DEFAULT NULL,
+  `firstname` varchar(255) DEFAULT NULL,
+  `lastname` varchar(255) NOT NULL,
+  `password` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+```
+
+This database creation action could be probably automated through Vagrant, but I didn't do that because I didn't want to modify the give Vagrant file.  
 
 
-- once the command has finished its execution, you should be able to go http://www.testbox.dev and see a welcome message.
+### Checking API
+
+once all the command have been successfully executed, you should be able to go http://www.testbox.dev/user and see a JSON response.
 
 
 ## How to use the application
