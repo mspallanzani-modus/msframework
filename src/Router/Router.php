@@ -2,9 +2,11 @@
 
 namespace Mslib\Router;
 
+use Mslib\Container\App;
+use Mslib\Container\Container;
 use Mslib\Exception\ConfigException;
+use Mslib\Exception\InitException;
 use Mslib\Exception\RoutingException;
-use Psr\Log\LoggerInterface;
 use Zend\Config\Exception\RuntimeException;
 use Zend\Config\Reader\Json;
 use Zend\Http\PhpEnvironment\Request;
@@ -17,9 +19,9 @@ use Zend\Http\PhpEnvironment\Request;
 class Router
 {
     /**
-     * @var LoggerInterface The logger instance
+     * @var Container
      */
-    protected $logger;
+    protected $container;
 
     /**
      * @var array List of all supported routes
@@ -27,22 +29,28 @@ class Router
     protected $routes = array();
 
     /**
+     * Router constructor.
+     *
+     * @param Container $container
+     */
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+    }
+
+    /**
      * Initializes all supported routes from the given configuration file (JSON supported)
      *
-     * @param $configFile JSON routing configuration file
-     * @param LoggerInterface $logger The logger instance
+     * @param $routerConfigFile JSON routing configuration file
      *
      * @throws ConfigException
      */
-    public function init($configFile, LoggerInterface $logger)
+    public function init($routerConfigFile)
     {
-        // setting the logger first
-        $this->logger = $logger;
-
-        // reading the config: json file expected
+        // reading the router config: json file expected
         try {
             $reader = new Json();
-            $data   = $reader->fromFile($configFile);
+            $data   = $reader->fromFile($routerConfigFile);
 
             // we check if routes are defined
             if (array_key_exists("routes", $data)) {
@@ -56,7 +64,7 @@ class Router
                         $route->setUrl($routeParams['url']);
                     } else {
                         // missing url param: we skip this route
-                        $logger->warning(
+                        $this->container->getLogger()->warning(
                             "The route '$routeName' does not define the 'url' parameter. This route will be ignored."
                         );
                         continue;
@@ -67,7 +75,7 @@ class Router
                         $route->setHttpMethod($routeParams['http-method']);
                     } else {
                         // missing http-method param: we skip this route
-                        $logger->warning(
+                        $this->container->getLogger()->warning(
                             "The route '$routeName' does not define the 'http-method' parameter. This route will be ignored."
                         );
                         continue;
@@ -78,7 +86,7 @@ class Router
                         $route->setController($routeParams['controller']);
                     } else {
                         // missing controller param: we skip this route
-                        $logger->warning(
+                        $this->container->getLogger()->warning(
                             "The route '$routeName' does not define the 'controller' parameter. This route will be ignored."
                         );
                         continue;
@@ -89,7 +97,7 @@ class Router
                         $route->setMethod($routeParams['method']);
                     } else {
                         // missing method param: we skip this route
-                        $logger->warning(
+                        $this->container->getLogger()->warning(
                             "The route '$routeName' does not define the 'method' parameter. This route will be ignored."
                         );
                         continue;
@@ -103,7 +111,7 @@ class Router
             }
         } catch (RuntimeException $e) {
             throw new ConfigException(
-                "It was not possible to read the given configuration file '$configFile'. " .
+                "It was not possible to read the given configuration file '$routerConfigFile'. " .
                 "Check that it is accessible and/or it is a valid json file.");
         }
     }
@@ -122,7 +130,7 @@ class Router
         $request = new Request();
 
         // logging the request that will be treated
-        $this->logger->info(sprintf(
+        $this->container->getLogger()->info(sprintf(
             "processing the following request: '%s' - HTTP METHOD: '%s'",
             $request->getUriString(),
             $request->getMethod()
@@ -131,23 +139,34 @@ class Router
         // We look for a route associated to the current HTTP request
         $route = $this->matchRequest($request);
         if (!($route instanceof Route)) {
-            throw new RoutingException("The requested request is not supported");
+            throw new RoutingException("The requested url is not supported");
         }
 
         /** @var $route Route */
         // We found a valid Route object associated to the current HTTP request: we call the Controller method
         $controllerClass = $route->getController();
-        if (class_exists($controllerClass)) {
-            $controller = new $controllerClass($this->logger);
+        try {
+            // we get the controller 
+            $controller = $this->container->getController($controllerClass);
+            
+            // we check if the controller method exists
             $method = $route->getMethod();
             if (method_exists($controller, $method)) {
                 // we call the controller method
-                $return = call_user_func(array($controller, $method), $request);
-                var_dump($return);
+                return call_user_func(array($controller, $method), $request);
             } else {
-                $this->logger->error("The method '$method' is not defined in the class '$controllerClass'.");
-                throw new RoutingException("Invalid method for the matched route");
+                $message = "The method '$method' is not defined in the class '$controllerClass'.";
+                $this->container->getLogger()->error($message);
+                throw new RoutingException("Invalid method for the matched route. Error message: $message");
             }
+        } catch (InitException $initEx) {
+            throw new RoutingException(
+                "It was not possible to initialize a controller class of type '$controllerClass' " . 
+                "for the route '$route->getName()' . Error message is: $initEx->getMessage()."
+            );
+        }
+        if (class_exists($controllerClass)) {
+            
         } else {
             throw new RoutingException(
                 "The controller class '$controllerClass' for the route '$route->getName()' does not exist"
@@ -166,8 +185,15 @@ class Router
     protected function matchRequest(Request $request)
     {
         foreach ($this->routes as $route) {
+//TODO this should be done with a regular expression
+            // We remove all get parameters
+            $requestUri = $request->getRequestUri();
+            if (strpos($requestUri, "?") > 0) {
+                $requestUri = substr($request->getRequestUri(), 0, strpos($requestUri, "?"));
+            }
+
             /** @var $route Route */
-            if ($route->getUrl() === $request->getRequestUri() &&
+            if ($route->getUrl() === $requestUri &&
                     $route->getHttpMethod() === $request->getMethod()) {
                 // The current route and the given request have the same uri and the same http method: it's a match!
                 return $route;
