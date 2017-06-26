@@ -10,8 +10,6 @@ My application **is missing of an encryption system for sensitive data (i.e. pas
 
 ## Installation
 
-### Download or clone the repository
-
 Use vagrant to configure and run this web application on a virtual box. Before proceeding, make sure your SSH is configured to work with Github (https://help.github.com/articles/generating-an-ssh-key/Locally). 
 
 - download this repository;
