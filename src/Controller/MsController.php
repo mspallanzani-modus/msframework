@@ -2,12 +2,16 @@
 
 namespace Mslib\Controller;
 
+use Mslib\Container\Container;
+use Mslib\Exception\ConfigException;
+use Mslib\Exception\InitException;
 use Mslib\Exception\RenderException;
 use Mslib\Model\EntityInterface;
 use Mslib\Repository\MsRepository;
 use Mslib\View\View;
+use Mslib\View\ViewHelper;
 use Psr\Log\LoggerInterface;
-use Zend\Http\Response;
+use Zend\Http\PhpEnvironment\Response;
 
 /**
  * Class MsController: General Controller class.
@@ -27,31 +31,40 @@ abstract class MsController
     protected $repository;
 
     /**
+     * @var Container
+     */
+    protected $container;
+
+    /**
      * MsController constructor.
      *
      * @param LoggerInterface $logger The logger instance
      * @param MsRepository $repository The framework repository instance associated to this controller
+     * @param Container $container The application container (services, config, etc)
      */
-    public function __construct(LoggerInterface $logger, MsRepository $repository)
+    public function __construct(LoggerInterface $logger, MsRepository $repository, Container $container)
     {
         // Setting controller services
         $this->logger       = $logger;
         $this->repository   = $repository;
+        $this->container    = $container;
     }
 
     /**
      * Renders a template view for the given EntityInterface instance
      *
      * @param EntityInterface $entity The EntityInterface instance to render
-     * @param null $template Template name with relative path
+     * @param string $template The relative or absolute template path
+     * @param bool $relativePath If true, the default template path will be used (configuration key 'template-folder')
      *
      * @return string
      *
      * @throws RenderException
      */
-    protected function renderEntityView(EntityInterface $entity, $template = null)
+    protected function renderEntityView(EntityInterface $entity, $template, $relativePath = true)
     {
-        $view = new View($template);
+        // We create a View object and we render it with the 'entity' parameter
+        $view = ViewHelper::getViewForTemplate($this->container, $template, $relativePath);
         return $view->render(array("entity" => $entity));
     }
 
@@ -62,6 +75,8 @@ abstract class MsController
      * @param string $message The error message
      *
      * @return Response
+     *
+     * @throws RenderException
      */
     protected function returnErrorResponse($status, $message)
     {
@@ -72,7 +87,7 @@ abstract class MsController
         $response->setStatusCode($status);
 
         // Setting the response content from the general response view
-        $view = new View("response.json.php");
+        $view = ViewHelper::getViewForTemplate($this->container, "response.json.php");
         $content = $view->render(array(
             "status"    => "error",
             "code"      => "-1",
@@ -93,6 +108,8 @@ abstract class MsController
      * @param string $message An additional success message
      *
      * @return Response
+     *
+     * @throws RenderException
      */
     protected function returnSuccessResponse($rendered, $status = "200", $message = "")
     {
@@ -103,7 +120,7 @@ abstract class MsController
         $response->setStatusCode($status);
 
         // Setting the response content from the general response view
-        $view = new View("response.json.php");
+        $view = ViewHelper::getViewForTemplate($this->container, "response.json.php");
 
         // if rendered data is actually a json string, we decode it again so that it could be rendered not as a string but as JSON
         if (is_string($rendered)) {
