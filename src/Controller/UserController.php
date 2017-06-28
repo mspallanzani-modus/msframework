@@ -4,9 +4,8 @@ namespace Mslib\Controller;
 
 use Mslib\Exception\RenderException;
 use Mslib\Model\User;
-use Mslib\View\View;
-use Zend\Http\Response;
-use Zend\Http\Request;
+use Zend\Http\PhpEnvironment\Request;
+use Zend\Http\PhpEnvironment\Response;
 use Zend\Stdlib\Parameters;
 
 /**
@@ -60,7 +59,7 @@ class UserController extends MsController
                 "General error message: '".$renderException->getGeneralMessage()."'"
             );
         } catch (\Exception $exception) {
-            $this->logger->error("An error occurred. Error message is: $exception->getMessage()");
+            $this->logger->error("An error occurred. Error message is:" . $exception->getMessage());
             return $this->returnErrorResponse(
                 500,
                 "An internal error occurred. Please contact the API owner."
@@ -133,7 +132,7 @@ class UserController extends MsController
                 "General error message: '".$renderException->getGeneralMessage()."'"
             );
         } catch (\Exception $exception) {
-            $this->logger->error("An error occurred. Error message is: $exception->getMessage()");
+            $this->logger->error("An error occurred. Error message is: " . $exception->getMessage());
             return $this->returnErrorResponse(
                 500,
                 "An internal error occurred. Please contact the API owner."
@@ -157,6 +156,11 @@ class UserController extends MsController
         }
         $id = $queryParam['id'];
 
+        // We check if id is numeric
+        if (!is_numeric($id)) {
+            return $this->returnErrorResponse(400, "'id' parameter should be a valid integer");
+        }
+
         // Getting the entity from the repository
         try {
             // MODEL: we get the user by id
@@ -175,10 +179,10 @@ class UserController extends MsController
 
             // We push the changes in the DB
             $updatedUser = $this->repository->update($updatedUser);
-
             if (!$updatedUser instanceof User) {
                 return $this->returnErrorResponse(400, "Entity not updated");
             }
+
             // VIEW: we render the view
             $userTemplate = $this->renderEntityView($updatedUser, "User/user.json.php");
 
@@ -194,7 +198,7 @@ class UserController extends MsController
                 "General error message: '".$renderException->getGeneralMessage()."'"
             );
         } catch (\Exception $exception) {
-            $this->logger->error("An error occurred. Error message is: $exception->getMessage()");
+            $this->logger->error("An error occurred. Error message is: " . $exception->getMessage());
             return $this->returnErrorResponse(
                 500,
                 "An internal error occurred. Please contact the API owner."
@@ -206,7 +210,7 @@ class UserController extends MsController
      * Deletes the user for the given DELETE request
      *
      * @param Request $request
-     * 
+     *
      * @return Response
      */
     public function delete(Request $request)
@@ -217,6 +221,11 @@ class UserController extends MsController
             return $this->returnErrorResponse(400, "Missing 'id' parameter");
         }
         $id = $queryParam['id'];
+
+        // We check if id is numeric
+        if (!is_numeric($id)) {
+            return $this->returnErrorResponse(400, "'id' parameter should be a valid integer");
+        }
 
         // Getting the entity from the repository
         try {
@@ -234,17 +243,8 @@ class UserController extends MsController
             }
             // we return a successful response
             return $this->returnSuccessResponse(array(), 200, "Entity deleted");
-        } catch (RenderException $renderException) {
-            $this->logger->error(
-                "An error occurred while trying to render a view. Error message is: " . $renderException->getMessage()
-            );
-            return $this->returnErrorResponse(
-                500,
-                "An internal error occurred. Please contact the API owner. " .
-                "General error message: '".$renderException->getGeneralMessage()."'"
-            );
         } catch (\Exception $exception) {
-            $this->logger->error("An error occurred. Error message is: $exception->getMessage()");
+            $this->logger->error("An error occurred. Error message is: " . $exception->getMessage());
             return $this->returnErrorResponse(
                 500,
                 "An internal error occurred. Please contact the API owner."
