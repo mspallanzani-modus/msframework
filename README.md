@@ -228,3 +228,12 @@ This action is used to delete an existing user. To do that, you have to send a D
   }
   ```
   
+## Run the Unit Tests
+
+Once correctly installed, you can run the phpunit tests with the following commands:
+
+```
+vagrant ssh
+cd /vagrant
+vendor/bin/phpunit
+```
