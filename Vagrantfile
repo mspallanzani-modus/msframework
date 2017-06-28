@@ -40,4 +40,12 @@ Vagrant.configure(VAGRANT_API_VERSION) do |config|
             dev-standalone.yml
     SHELL
 
+    config.vm.provision "shell", inline: <<-SHELL
+        mysql my_app < /vagrant/db/db.sql
+    SHELL
+
+    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+        cd /vagrant
+        composer install
+    SHELL
 end
