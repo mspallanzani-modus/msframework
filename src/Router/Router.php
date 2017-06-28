@@ -10,6 +10,7 @@ use Mslib\Exception\RoutingException;
 use Zend\Config\Exception\RuntimeException;
 use Zend\Config\Reader\Json;
 use Zend\Http\PhpEnvironment\Request;
+use Zend\Http\PhpEnvironment\Response;
 
 /**
  * Class Router: it implements a routing system for the application.
@@ -120,15 +121,14 @@ class Router
      * Returns an instance of Mslib\Router\Route mapped to the current HTTP request.
      * If no route is found, a RoutingException will be thrown.
      *
-     * @return Route
+     * @param Request $request The Request object to be treated
+     *
+     * @return Response
      *
      * @throws RoutingException
      */
-    public function resolveRequest()
+    public function resolveRequest(Request $request)
     {
-        // creating a request object from the php environment
-        $request = new Request();
-
         // logging the request that will be treated
         $this->container->getLogger()->info(sprintf(
             "processing the following request: '%s' - HTTP METHOD: '%s'",
@@ -147,7 +147,7 @@ class Router
         $controllerClass = $route->getController();
         try {
             // we get the controller 
-            $controller = $this->container->getController($controllerClass);
+            $controller = RouterHelper::getController($controllerClass, $this->container);
             
             // we check if the controller method exists
             $method = $route->getMethod();
@@ -162,17 +162,9 @@ class Router
         } catch (InitException $initEx) {
             throw new RoutingException(
                 "It was not possible to initialize a controller class of type '$controllerClass' " . 
-                "for the route '$route->getName()' . Error message is: $initEx->getMessage()."
+                "for the route '". $route->getName() . "' . Error message is: " .$initEx->getMessage()
             );
         }
-        if (class_exists($controllerClass)) {
-            
-        } else {
-            throw new RoutingException(
-                "The controller class '$controllerClass' for the route '$route->getName()' does not exist"
-            );
-        }
-        return $route;
     }
 
     /**
