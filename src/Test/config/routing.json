@@ -1,0 +1,30 @@
+{
+  "routes" : {
+    "user-show"  : {
+      "url"         : "/user",
+      "http-method" : "GET",
+      "controller"  : "Mslib\\Controller\\UserController",
+      "method"      : "show"
+    },
+    "user-show-missing-url"  : {
+      "http-method" : "GET",
+      "controller"  : "Mslib\\Controller\\UserController",
+      "method"      : "show"
+    },
+    "user-show-missing-http"  : {
+      "url"         : "/user-http",
+      "controller"  : "Mslib\\Controller\\UserController",
+      "method"      : "show"
+    },
+    "user-show-missing-controller"  : {
+      "url"         : "/user-controller",
+      "http-method" : "GET",
+      "method"      : "show"
+    },
+    "user-show-missing-method"  : {
+      "url"         : "/user-method",
+      "http-method" : "GET",
+      "controller"  : "Mslib\\Controller\\UserController"
+    }
+  }
+}

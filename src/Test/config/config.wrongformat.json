@@ -1,0 +1,14 @@
+
+  "logger" : {
+    "name"        : "ms_logger",
+    "path"        : "var/ms_app.log"
+    "level"       : "INFO"
+  },
+  "db" : {
+    "type"        : "database-type",
+    "name"        : "database-name",
+    "host"        : "database-host",
+    "user"        : "database-user",
+    "password"    : "database-password",
+    "charset"     : "database-charset"
+  }

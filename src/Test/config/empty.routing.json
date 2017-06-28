@@ -1,0 +1,10 @@
+{
+  "wrong-routes" : {
+    "user-show"  : {
+      "url"         : "/user",
+      "http-method" : "GET",
+      "controller"  : "Mslib\\Controller\\UserController",
+      "method"      : "show"
+    }
+  }
+}
