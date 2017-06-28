@@ -8,7 +8,9 @@ use Monolog\Handler\FirePHPHandler;
 use Mslib\Controller\MsController;
 use Mslib\Exception\ConfigException;
 use Mslib\Exception\InitException;
+use Mslib\Repository\MsRepository;
 use Psr\Log\LoggerInterface;
+use Zend\Config\Exception\RuntimeException;
 use Zend\Config\Reader\Json;
 
 /**
@@ -43,6 +45,8 @@ class Container
      * 
      * @throws ConfigException
      * @throws InitException
+     *
+     * @codeCoverageIgnore
      */
     public function init($configFile)
     {
@@ -93,7 +97,7 @@ class Container
      *
      * @throws ConfigException
      */
-    protected function readConfig($configFile)
+    public function readConfig($configFile)
     {
         // reading the configuration
         try {
@@ -107,6 +111,24 @@ class Container
     }
 
     /**
+     * Returns a configuration value for the given configuration key
+     *
+     * @param string $key The configuration key
+     *
+     * @return mixed
+     *
+     * @throws ConfigException
+     */
+    public function getConfigValue($key)
+    {
+        if (array_key_exists($key, $this->config)) {
+            return $this->config[$key];
+        } else {
+            throw new ConfigException("Config value for key '$key' not found'");
+        }
+    }
+
+    /**
      * Initializes the application logger
      *
      * @param array $data The config array containing all logger required parameters
@@ -115,7 +137,7 @@ class Container
      * @throws ConfigException
      * @throws InitException
      */
-    protected function setLogger(array $data, $configFile)
+    public function setLogger(array $data, $configFile)
     {
         // we check if logger is well configured
         $name = $path = $level = null;
@@ -163,7 +185,7 @@ class Container
             $this->logger = $logger;
         } catch (\Exception $e) {
             throw new InitException(
-                "It was not possible to initialize the logger. Error message is: $e->getMessage()."
+                "It was not possible to initialize the logger. Error message is: ". $e->getMessage()
             );
         }
     }
@@ -177,7 +199,7 @@ class Container
      * @throws ConfigException
      * @throws InitException
      */
-    protected function setDbConnection(Array $data, $configFile)
+    public function setDbConnection(array $data, $configFile)
     {
         // we check if database connection is well configured
         $type = $name = $host = $user = $password = $charset = null;
@@ -251,48 +273,8 @@ class Container
                 $options
             );
         } catch (\Exception $e) {
-            throw new InitExsception(
-                "It was not possible to initialize the db connection. Error message is: $e->getMessage()."
-            );
-        }
-    }
-
-    /**
-     * Returns a MsRepository child instance for the given Controller class
-     *
-     * @param string $controllerClass The namespace of the controller class
-     *
-     * @throws InitException
-     */
-    public function getRepository($controllerClass)
-    {
-        $repositoryClass = str_replace("Controller", "Repository", $controllerClass);
-        if (class_exists($repositoryClass)) {
-            return new $repositoryClass($this->db);
-        } else {
             throw new InitException(
-                "It was not possible to find a Repository class for the given Controller class '$controllerClass'. " .
-                "Please check if you implemented a class 'Mslib\\Repository\\" . $repositoryClass . "Repository"
-            );
-        }
-    }
-
-    /**
-     * Returns a MsController child instance for the give Controller class
-     *
-     * @param string $controllerClass The namespace of the controller class
-     *
-     * @return MsController
-     *
-     * @throws InitException
-     */
-    public function getController($controllerClass)
-    {
-        if (class_exists($controllerClass)) {
-            return new $controllerClass($this->logger, $this->getRepository($controllerClass));
-        } else {
-            throw new InitException(
-                "The given controller class '$controllerClass' does not exist"
+                "It was not possible to initialize the db connection. Error message is: " . $e->getMessage()
             );
         }
     }
