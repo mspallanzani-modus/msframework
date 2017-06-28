@@ -19,20 +19,28 @@ class View
     /**
      * View constructor.
      *
-     * @param string $template The template relative path (all templates should be stored in the Resources/views folder).
+     * @param string $template The template path.
      *
      * @throws RenderException
      */
     public function __construct($template)
     {
-        $file = 'src/Resources/views/' . $template;
-        if (file_exists($file)) {
-            $this->template = $file;
+        if (file_exists($template)) {
+            $this->template = $template;
         } else {
-            throw new RenderException("Template '$file' not found!");
+            throw new RenderException("Template '$template' not found!");
         }
     }
 
+    /**
+     * Returns the template path
+     *
+     * @return string
+     */
+    public function getTemplate()
+    {
+        return $this->template;
+    }
     /**
      * Renders and returns the template content.
      *
@@ -56,7 +64,7 @@ class View
             return $content;
         } catch (\Exception $exception) {
             throw new RenderException(
-                "Impossible to render the template '$this->template'. Error message is:  $exception->getMessage()"
+                "Impossible to render the template '$this->template'. Error message is: " . $exception->getMessage()
             );
         }
     }
