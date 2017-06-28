@@ -6,6 +6,8 @@ namespace Mslib\Router;
  * Class Route: it represents a supported route. For each route, it is possible to define its relative url,
  * its HTTP method and the Controller class and method associated to it.
  *
+ * @codeCoverageIgnore
+ *
  * @package Mslib\Router
  */
 class Route
