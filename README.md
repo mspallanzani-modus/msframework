@@ -26,29 +26,29 @@ echo 192.168.59.76   testbox.dev www.testbox.dev | sudo tee -a /etc/hosts
 vagrant up
 ```
 
-### Configuring all vendors through composer
+- you should be now able to go the following link and see an API response: http://testbox.dev/
 
-- Run composer install to download all project dependencies (for more information on how to use and install composer on your local machine, please refer to the official online documentation):
+If you see a system error saying that it was not possible to find the autoload.php file, it probably means that vagrant was not able to run the 'composer install' command. If that's the case, please read the following paragraph 'Composer'.
+
+
+### Composer
+
+The project Vagrantfile is configured so that it runs the 'composer install' command, once the VB has been created. If you see a timeout error (phpunit dependency could cause a timeout error), please do the following actions from the command line:
+
 ```
+cd path/to/project/local
+vagrant ssh
+cd /vagrant
 composer install
 ```
 
-### Creating the database
 
-By default, the used Vagrant image creates a database 'my_app'. To create the required tables, do the following actions:
+### The database
 
-- Connect to your vagrant machine with the command 
-```
-vagrant ssh 
-```
-- Run the following mysql command:
-```
-mysql my_app < /vagrant/db/db.sql
-```
+By default, the used Vagrant image creates a database 'my_app' and it creates a table 'user'. The table schema is in the followinng folder:
 
-The database scheme can be found in the project in the following file:
 ```
-db/db.sql
+[base_project_folder]/db/db.sql
 ```
 
 Here is the sql creation code for the 'user' table:
@@ -62,8 +62,6 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
-
-This database creation action could be probably automated through Vagrant, but I didn't do that because I didn't want to modify the give Vagrant file.  
 
 
 ### Checking API
@@ -228,3 +226,12 @@ This action is used to delete an existing user. To do that, you have to send a D
   }
   ```
   
+## Run the Unit Tests
+
+Once correctly installed, you can run the phpunit tests with the following commands:
+
+```
+vagrant ssh
+cd /vagrant
+vendor/bin/phpunit
+```
