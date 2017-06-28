@@ -71,14 +71,18 @@ class UserRepository extends MsRepository
             $parameters[':password'] = $entity->getPassword();
         }
         $set = trim($set, ',');
-        $sql = "UPDATE user SET $set WHERE id = :user_id";
 
-        $query = $this->db->prepare($sql, array(\PDO::ATTR_CURSOR => \PDO::CURSOR_FWDONLY));
+        // if no set parameters, then we don't do any action
+        $result = null;
+        if (strlen($set) > 0) {
+            $sql = "UPDATE user SET $set WHERE id = :user_id";
+            $query = $this->db->prepare($sql, array(\PDO::ATTR_CURSOR => \PDO::CURSOR_FWDONLY));
 
-        // we execute the query
-        $result = $query->execute($parameters);
+            // we execute the query
+            $result = $query->execute($parameters);
+        }
 
-        // we get the last inserted id
+        // true if the query was successful; false otherwise
         if ($result) {
             return $this->getById($entity->getId());
         }
