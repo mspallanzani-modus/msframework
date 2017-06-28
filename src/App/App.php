@@ -6,7 +6,9 @@ use Mslib\Container\Container;
 use Mslib\Exception\MsException;
 use Mslib\Router\Router;
 use Mslib\View\View;
-use Zend\Http\Response;
+use Mslib\View\ViewHelper;
+use Zend\Http\PhpEnvironment\Request;
+use Zend\Http\PhpEnvironment\Response;
 
 /**
  * Class App: main application class.
@@ -29,8 +31,13 @@ class App
      * Initializes all required services (Logger, DB connection, ect).
      *
      * @param string $configFile The configuration file path
+     * @param string $routingConfigFile The routing configuration file path
+     *
+     * @return null|Response
+     *
+     * @codeCoverageIgnore
      */
-    public function init($configFile)
+    public function init($configFile, $routingConfigFile)
     {
         try {
             // we first set the container
@@ -38,39 +45,68 @@ class App
             $this->container->init($configFile);
 
             // we then set the router
-            $this->setRouter();
-
-            // we resolve the request
-            $response = $this->router->resolveRequest();
-
-            $this->returnResponse($response);
+            $this->router = new Router($this->container);
+            $this->router->init($routingConfigFile, $this->container->getLogger());
         } catch (MsException $msException) {
-            $this->returnErrorResponse($msException->getGeneralMessage());
+            return $this->returnErrorResponse($msException->getGeneralMessage());
         }
     }
 
     /**
-     * Sets the Router for this app instance
+     * Resolve an HTTP request.
+     *
+     * @return Response
+     *
+     * @codeCoverageIgnore
      */
-    protected function setRouter()
+    public function resolveRequest()
     {
         try {
-            $this->router = new Router($this->container);
-            $this->router->init('./app/config/routing.json', $this->container->getLogger());
+            // creating a request object from the php environment
+            $request = new Request();
+
+            // we resolve the request
+            return $this->router->resolveRequest($request);
         } catch (MsException $msException) {
             $this->returnErrorResponse($msException->getGeneralMessage());
         }
     }
 
     /**
-     * Returns a general error JSON response to the client.
+     * Sets a Container instance for this App instance
      *
-     * @param string $message additional error message
+     * @param Container $container The container to be set
      */
-    protected function returnErrorResponse($message)
+    public function setContainer(Container $container)
     {
-        // Setting the response content from the view
-        $view = new View("response.json.php");
+        $this->container = $container;
+    }
+
+    /**
+     * Sends a response back to the client for the given Response object
+     *
+     * @param Response $response
+     *
+     * @codeCoverageIgnore
+     *
+     */
+    public function sendResponse(Response $response)
+    {
+        // Simply send the response back
+        $response->send();
+    }
+
+    /**
+     * Returns a general ERROR JSON response to the client for the given Response object.
+     *
+     * @param string $message Additional error message
+     *
+     * @return Response
+     */
+    public function returnErrorResponse($message)
+    {
+        // Creating the response content from the view
+        $view = ViewHelper::getViewForTemplate($this->container,"response.json.php");
         $content = $view->render(array(
             "status"    => "error",
             "code"      => "-1",
@@ -78,23 +114,11 @@ class App
             "data"      => array()
         ));
 
-        // Setting the headers
-        header('Content-Type: application/json');
-        header('Status: 500');
-
-        // Returning the response
-        echo $content;
-    }
-
-    /**
-     * Returns a general JSON response to the client.
-     *
-     * @param Response $response
-     */
-    protected function returnResponse(Response $response)
-    {
-        header('Content-Type: application/json');
-        header('Status: ' . $response->getStatusCode());
-        echo $response->getContent();
+        // Creating and returning the response object
+        $response = new Response();
+        $response->setStatusCode(500);
+        $response->getHeaders()->addHeaderLine('Content-Type: application/json');
+        $response->setContent($content);
+        return $response;
     }
 }
