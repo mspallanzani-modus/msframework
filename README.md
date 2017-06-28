@@ -33,22 +33,12 @@ vagrant up
 composer install
 ```
 
-### Creating the database
+### The database
 
-By default, the used Vagrant image creates a database 'my_app'. To create the required tables, do the following actions:
+By default, the used Vagrant image creates a database 'my_app' and it creates a table 'user'. The table schema is in the followinng folder:
 
-- Connect to your vagrant machine with the command 
 ```
-vagrant ssh 
-```
-- Run the following mysql command:
-```
-mysql my_app < /vagrant/db/db.sql
-```
-
-The database scheme can be found in the project in the following file:
-```
-db/db.sql
+[base_project_folder]/db/db.sql
 ```
 
 Here is the sql creation code for the 'user' table:
@@ -63,8 +53,16 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
 
-This database creation action could be probably automated through Vagrant, but I didn't do that because I didn't want to modify the give Vagrant file.  
+### Composer
 
+The project Vagrantfile is configured so that it runs the 'composer install' command, once the VB has been created. If you see a timeout error (phpunit dependency could cause a timeout error), please do the following actions from the command line:
+
+```
+cd path/to/project/local
+vagrant ssh
+cd /vagrant
+composer install
+```
 
 ### Checking API
 
