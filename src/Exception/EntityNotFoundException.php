@@ -5,6 +5,8 @@ namespace Mslib\Exception;
 /**
  * Class EntityNotFoundException: custom exception used for not found entity
  *
+ * @codeCoverageIgnore
+ *
  * @package Mslib\Exception
  */
 class EntityNotFoundException extends MsException

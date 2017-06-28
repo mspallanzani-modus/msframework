@@ -5,6 +5,8 @@ namespace Mslib\Exception;
 /**
  * Class ConfigException: custom exception used for a general configuration error
  *
+ * @codeCoverageIgnore
+ *
  * @package Mslib\Exception
  */
 class ConfigException extends MsException
