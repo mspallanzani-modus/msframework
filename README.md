@@ -45,7 +45,7 @@ composer install
 
 ### The database
 
-By default, the used Vagrant image creates a database 'my_app' and it creates a table 'user'. The table schema is in the followinng folder:
+By default, the used Vagrant image creates a database 'my_app' with a table 'user'. The table schema is in the followinng folder:
 
 ```
 [base_project_folder]/db/db.sql
@@ -66,7 +66,7 @@ CREATE TABLE `user` (
 
 ### Checking API
 
-once all the command have been successfully executed, you should be able to go http://www.testbox.dev/user and see a JSON response.
+Once all the above commands have been successfully executed, you should be able to go http://www.testbox.dev/user and see a JSON response.
 
 
 ## How to use the application
